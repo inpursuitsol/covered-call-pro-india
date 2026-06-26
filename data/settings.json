@@ -1,0 +1,23 @@
+{
+    "user": {
+        "name": "Anand R",
+        "broker": "Zerodha"
+    },
+
+    "portfolio": {
+        "nifty_bees": 1200,
+        "lots": 5
+    },
+
+    "strategy": {
+        "preferred_otm": 2.5,
+        "minimum_vix": 15,
+        "target_monthly_yield": 1.0,
+        "paper_trading": true
+    },
+
+    "dashboard": {
+        "show_ai": true,
+        "dark_mode": true
+    }
+}

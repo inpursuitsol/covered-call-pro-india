@@ -14,13 +14,11 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-
 # -----------------------------------------------------
 # Load Market Data
 # -----------------------------------------------------
 
 market = market_service.get_snapshot()
-
 
 # -----------------------------------------------------
 # Sidebar
@@ -36,10 +34,9 @@ page = st.sidebar.radio(
         "📊 Market",
         "📈 Option Chain",
         "📝 Paper Trades",
-        "⚙ Settings"
-    ]
+        "⚙ Settings",
+    ],
 )
-
 
 # -----------------------------------------------------
 # Dashboard
@@ -48,30 +45,39 @@ page = st.sidebar.radio(
 if page == "🏠 Dashboard":
 
     st.title("📈 CoveredCall Pro India")
-
     st.caption("Professional Options Income Platform")
 
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3, col4, col5 = st.columns(5)
 
-    col1.metric(
-        "Opportunity Score",
-        f'{market["opportunity_score"]}/100'
-    )
+    with col1:
+        st.metric(
+            "Opportunity Score",
+            f'{market["opportunity_score"]}/100'
+        )
 
-    col2.metric(
-        "Market Mood",
-        market["market_status"]
-    )
+    with col2:
+        st.metric(
+            "Market Mood",
+            market["market_status"]
+        )
 
-    col3.metric(
-        "Risk",
-        market["risk"]
-    )
+    with col3:
+        st.metric(
+            "Risk",
+            market["risk"]
+        )
 
-    col4.metric(
-        "Expected Income",
-        f'₹{market["expected_income"]:,}'
-    )
+    with col4:
+        st.metric(
+            "Expected Income",
+            f'₹{market["expected_income"]:,}'
+        )
+
+    with col5:
+        st.metric(
+            "Live NIFTY",
+            f'{market["nifty"]:,}'
+        )
 
     st.divider()
 
@@ -83,9 +89,18 @@ if page == "🏠 Dashboard":
         f"""
 **Market Status :** {market["market_status"]}
 
+**Live NIFTY :** {market["nifty"]:,}
+
 **India VIX :** {market["vix"]}
 
 **Expected Income :** ₹{market["expected_income"]:,}
+
+**Weekly Expiry :** {market["expiry"]}
+
+**Last Updated :**
+
+{market["last_updated"]}
+
 
 **Last Updated :**
 
@@ -93,6 +108,9 @@ if page == "🏠 Dashboard":
 """
     )
 
+# -----------------------------------------------------
+# Portfolio
+# -----------------------------------------------------
 
 elif page == "💼 Portfolio":
 
@@ -100,6 +118,9 @@ elif page == "💼 Portfolio":
 
     st.info("Coming in Version 0.3")
 
+# -----------------------------------------------------
+# Market
+# -----------------------------------------------------
 
 elif page == "📊 Market":
 
@@ -107,6 +128,9 @@ elif page == "📊 Market":
 
     st.info("Coming in Version 0.3")
 
+# -----------------------------------------------------
+# Option Chain
+# -----------------------------------------------------
 
 elif page == "📈 Option Chain":
 
@@ -114,6 +138,9 @@ elif page == "📈 Option Chain":
 
     st.info("Coming in Version 0.4")
 
+# -----------------------------------------------------
+# Paper Trades
+# -----------------------------------------------------
 
 elif page == "📝 Paper Trades":
 
@@ -121,6 +148,9 @@ elif page == "📝 Paper Trades":
 
     st.info("Coming in Version 0.5")
 
+# -----------------------------------------------------
+# Settings
+# -----------------------------------------------------
 
 elif page == "⚙ Settings":
 
