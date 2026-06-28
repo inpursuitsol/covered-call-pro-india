@@ -9,3 +9,7 @@ class CandidateTrade:
     option: OptionContract
 
     distance_percent: float
+
+    premium: float = 0.0
+
+    score: float = 0.0

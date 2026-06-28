@@ -1,6 +1,8 @@
 import streamlit as st
 
 from services.market_service import market_service
+from services.recommendation_service import recommendation_service
+from services.paper_trade_service import paper_trade_service
 
 
 # -----------------------------------------------------
@@ -15,10 +17,12 @@ st.set_page_config(
 )
 
 # -----------------------------------------------------
-# Load Market Data
+# Load Data
 # -----------------------------------------------------
 
 market = market_service.get_snapshot()
+
+trade = recommendation_service.get_recommendation()
 
 # -----------------------------------------------------
 # Sidebar
@@ -27,15 +31,25 @@ market = market_service.get_snapshot()
 st.sidebar.title("📈 CoveredCall Pro India")
 
 page = st.sidebar.radio(
+
     "Navigation",
+
     [
+
         "🏠 Dashboard",
+
         "💼 Portfolio",
+
         "📊 Market",
+
         "📈 Option Chain",
+
         "📝 Paper Trades",
+
         "⚙ Settings",
-    ],
+
+    ]
+
 )
 
 # -----------------------------------------------------
@@ -45,68 +59,125 @@ page = st.sidebar.radio(
 if page == "🏠 Dashboard":
 
     st.title("📈 CoveredCall Pro India")
-    st.caption("Professional Options Income Platform")
 
-    col1, col2, col3, col4, col5 = st.columns(5)
+    st.caption(
+        "Professional Covered Call Decision Platform"
+    )
 
-    with col1:
+    c1, c2, c3, c4, c5 = st.columns(5)
+
+    with c1:
         st.metric(
-            "Opportunity Score",
-            f'{market["opportunity_score"]}/100'
+            "NIFTY",
+            f"{market['nifty']:,.2f}"
         )
 
-    with col2:
+    with c2:
         st.metric(
-            "Market Mood",
-            market["market_status"]
+            "India VIX",
+            market["vix"]
         )
 
-    with col3:
+    with c3:
+        st.metric(
+            "Opportunity",
+            f"{market['opportunity_score']}/100"
+        )
+
+    with c4:
+        st.metric(
+            "Expected Income",
+            f"₹{market['expected_income']:,.0f}"
+        )
+
+    with c5:
         st.metric(
             "Risk",
             market["risk"]
-        )
-
-    with col4:
-        st.metric(
-            "Expected Income",
-            f'₹{market["expected_income"]:,}'
-        )
-
-    with col5:
-        st.metric(
-            "Live NIFTY",
-            f'{market["nifty"]:,}'
         )
 
     st.divider()
 
     st.subheader("ATHENA Recommendation")
 
-    st.success("SELL NIFTY CALL (Paper Trade)")
+    if trade is None:
 
-    st.info(
-        f"""
-**Market Status :** {market["market_status"]}
+        st.warning(
+            "No recommendation available."
+        )
 
-**Live NIFTY :** {market["nifty"]:,}
+    else:
 
-**India VIX :** {market["vix"]}
+        st.success(
+            f"{trade.action} {trade.strike} CE"
+        )
 
-**Expected Income :** ₹{market["expected_income"]:,}
+        left, right = st.columns([2, 1])
 
-**Weekly Expiry :** {market["expiry"]}
+        with left:
 
-**Last Updated :**
+            st.markdown(f"""
 
-{market["last_updated"]}
+### Recommendation
 
+**Action**
 
-**Last Updated :**
+{trade.action}
 
-{market["last_updated"]}
-"""
-    )
+**Strike**
+
+{trade.strike}
+
+**Premium**
+
+₹{trade.premium}
+
+**Expected Monthly Income**
+
+₹{trade.monthly_income:,.0f}
+
+**Reason**
+
+{trade.reason}
+
+""")
+
+        with right:
+
+            st.metric(
+                "Confidence",
+                f"{trade.confidence}%"
+            )
+
+            st.metric(
+                "Risk",
+                trade.risk
+            )
+
+            st.metric(
+                "Expiry",
+                trade.expiry.strftime("%d %b %Y")
+                if hasattr(trade.expiry, "strftime")
+                else str(trade.expiry)
+                    )
+
+    st.divider()
+
+    st.subheader("Market Snapshot")
+
+    st.info(f"""
+
+Live NIFTY : **{market['nifty']:,.2f}**
+
+India VIX : **{market['vix']}**
+
+Market Status : **{market['market_status']}**
+
+Last Updated :
+
+{market['last_updated']}
+
+""")
 
 # -----------------------------------------------------
 # Portfolio
@@ -114,9 +185,14 @@ if page == "🏠 Dashboard":
 
 elif page == "💼 Portfolio":
 
-    st.title("Portfolio")
+    st.title("💼 Portfolio")
 
-    st.info("Coming in Version 0.3")
+    st.metric("NIFTYBeES Holdings", "1200")
+
+    st.metric("Covered Call Lots", "5")
+
+    st.info("Portfolio management will be enhanced in Version 1.1")
+
 
 # -----------------------------------------------------
 # Market
@@ -124,9 +200,36 @@ elif page == "💼 Portfolio":
 
 elif page == "📊 Market":
 
-    st.title("Market")
+    st.title("📊 Live Market")
 
-    st.info("Coming in Version 0.3")
+    c1, c2 = st.columns(2)
+
+    with c1:
+
+        st.metric(
+            "NIFTY",
+            f"{market['nifty']:,.2f}"
+        )
+
+    with c2:
+
+        st.metric(
+            "India VIX",
+            market["vix"]
+        )
+
+    st.write("")
+
+    st.write("Weekly Expiry :", market["expiry"])
+
+    st.write("Market Status :", market["market_status"])
+
+    st.write("Last Updated :", market["last_updated"])
+
+
+# -----------------------------------------------------
+# Option Chain
+# -----------------------------------------------------
 
 # -----------------------------------------------------
 # Option Chain
@@ -134,9 +237,54 @@ elif page == "📊 Market":
 
 elif page == "📈 Option Chain":
 
-    st.title("Option Chain")
+    from providers.nse_option_chain_provider import (
+        nse_option_chain_provider
+    )
 
-    st.info("Coming in Version 0.4")
+    st.title("📈 Live NSE Option Chain")
+
+    calls = nse_option_chain_provider.get_calls()
+
+    if not calls:
+
+        st.error("Unable to fetch NSE Option Chain.")
+
+    else:
+
+        data = []
+
+        for option in calls:
+
+            data.append({
+
+                "Strike": option.strike,
+
+                "Premium": option.premium,
+
+                "Bid": option.bid,
+
+                "Ask": option.ask,
+
+                "OI": option.open_interest,
+
+                "Volume": option.volume,
+
+                "IV": option.implied_volatility
+
+            })
+
+        st.dataframe(
+            data,
+            use_container_width=True,
+            hide_index=True
+        )
+
+        if st.button("💾 Save Paper Trade"):
+
+                paper_trade_service.save(trade)
+
+                st.success("Paper trade saved successfully.")
+
 
 # -----------------------------------------------------
 # Paper Trades
@@ -144,9 +292,21 @@ elif page == "📈 Option Chain":
 
 elif page == "📝 Paper Trades":
 
-    st.title("Paper Trades")
+    st.title("📝 Paper Trade Journal")
 
-    st.info("Coming in Version 0.5")
+    trades = paper_trade_service.get_all()
+
+    if len(trades) == 0:
+
+        st.info("No paper trades available.")
+
+    else:
+
+        st.dataframe(
+            trades,
+            use_container_width=True
+        )
+
 
 # -----------------------------------------------------
 # Settings
@@ -154,6 +314,20 @@ elif page == "📝 Paper Trades":
 
 elif page == "⚙ Settings":
 
-    st.title("Settings")
+    st.title("⚙ Settings")
 
-    st.info("Coming in Version 0.5")
+    st.write("Current Strategy Settings")
+
+    st.write("---")
+
+    st.write("Preferred OTM :", "2.5 %")
+
+    st.write("Minimum VIX :", "15")
+
+    st.write("Lots :", "5")
+
+    st.write("Paper Trading :", "Enabled")
+
+    st.info(
+        "Settings page will become editable in Version 1.1"
+    )

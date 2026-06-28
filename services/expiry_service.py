@@ -16,9 +16,14 @@ class ExpiryService:
 
         days_until_thursday = (3 - today.weekday()) % 7
 
-        expiry = today + timedelta(days=days_until_thursday)
+        if days_until_thursday == 0:
+            days_until_thursday = 7
 
-        return expiry.strftime("%d %b %Y")
+        return today + timedelta(days=days_until_thursday)
+
+    def get_next_expiry_display(self):
+
+        return self.get_next_expiry().strftime("%d %b %Y")
 
 
 expiry_service = ExpiryService()
